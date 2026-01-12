@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>基礎相性値・最適化ツール</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: #e0e0e0;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            padding: 15px;
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding-bottom: 80px;
+        }
+
+        h1 {
+            font-size: 1.3rem;
+            text-align: center;
+            margin-bottom: 20px;
+            color: #bb86fc;
+        }
+
+        h2 {
+            font-size: 1.1rem;
+            border-bottom: 2px solid #333;
+            padding-bottom: 8px;
+            margin-top: 0;
+            color: #03dac6;
+        }
+
+        .card {
+            background-color: #1e1e1e;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        /* --- Rich Buttons --- */
+        button {
+            padding: 12px 20px;
+            width: 100%;
+            font-size: 1rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            margin-top: 10px;
+        }
+
+        button:active {
+            transform: scale(0.98);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #6200ea, #3700b3);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #7c4dff, #6200ea);
+        }
+
+        .btn-accent {
+            background: linear-gradient(135deg, #03dac6, #018786);
+            color: #000;
+        }
+
+        .btn-accent:hover {
+            background: linear-gradient(135deg, #66fff9, #03dac6);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #cf6679, #b00020);
+            color: white;
+            width: auto;
+            padding: 8px 16px;
+            font-size: 0.8rem;
+        }
+
+        .btn-secondary {
+            background: #333;
+            color: #ddd;
+            width: auto;
+            padding: 8px 16px;
+            font-size: 0.8rem;
+        }
+
+        /* --- Grid for Monster Selection --- */
+        .parent-grid-row {
+            display: grid;
+            grid-template-columns: 30px 1fr 1fr 1fr;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .parent-label {
+            writing-mode: vertical-rl;
+            text-orientation: upright;
+            font-size: 0.8rem;
+            color: #888;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .monster-btn {
+            background-color: #2d2d2d;
+            border: 2px solid #444;
+            border-radius: 8px;
+            height: 70px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            overflow: hidden;
+            transition: border-color 0.2s;
+        }
+
+        .monster-btn:hover {
+            border-color: #666;
+        }
+
+        .monster-btn.selected {
+            border-color: #bb86fc;
+            background-color: #2a2a3a;
+        }
+
+        .monster-btn img {
+            width: 90%;
+            height: auto;
+            max-height: 50px;
+            object-fit: contain;
+        }
+
+        .monster-btn span {
+            font-size: 0.6rem;
+            margin-top: 2px;
+            color: #ccc;
+        }
+
+        /* --- Sliders --- */
+        .slider-container {
+            margin-bottom: 20px;
+        }
+
+        .slider-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .adjust-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #333;
+            color: white;
+            margin: 0;
+            padding: 0;
+            font-size: 1.2rem;
+        }
+
+        input[type=range] {
+            flex: 1;
+            accent-color: #bb86fc;
+            height: 6px;
+            background: #333;
+            border-radius: 3px;
+        }
+
+        /* --- Modal (5 Columns) --- */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(4px);
+            /* Centering Logic */
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex !important;
+        }
+
+        .modal-content {
+            background-color: #1e1e1e;
+            margin: 0;
+            padding: 20px;
+            border-radius: 12px;
+            width: 95%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 1px solid #444;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .modal-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 8px 4px;
+            background: #2d2d2d;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .modal-item:active {
+            background: #555;
+        }
+
+        .modal-item img {
+            width: 100%;
+            max-width: 50px;
+            height: auto;
+            margin-bottom: 4px;
+        }
+
+        .modal-item span {
+            font-size: 0.6rem;
+            text-align: center;
+            color: #eee;
+            line-height: 1.1;
+        }
+
+        /* --- Results Table --- */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        th,
+        td {
+            padding: 8px;
+            text-align: center;
+            border-bottom: 1px solid #333;
+        }
+
+        th {
+            background-color: #252525;
+            color: #aaa;
+        }
+
+        .symbol-select {
+            width: 100%;
+            padding: 8px;
+            background: #333;
+            color: white;
+            border: 1px solid #555;
+            border-radius: 4px;
+            font-size: 1rem;
+            text-align: center;
+            appearance: none;
+        }
+
+        /* --- Logs --- */
+        .monitor-panel {
+            background: #000;
+            color: #00ff00;
+            font-family: 'Consolas', monospace;
+            padding: 10px;
+            border-radius: 6px;
+            height: 120px;
+            overflow-y: scroll;
+            font-size: 0.75rem;
+            margin-top: 10px;
+            border: 1px solid #333;
+        }
+
+        /* --- Matrix Display --- */
+        .matrix-scroll {
+            overflow-x: auto;
+            max-height: 400px;
+            border: 1px solid #333;
+            border-radius: 4px;
+        }
+
+        .matrix-table {
+            font-size: 0.7rem;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .matrix-table th,
+        .matrix-table td {
+            min-width: 40px;
+            height: 30px;
+            border: 1px solid #222;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .matrix-table th {
+            background: #333;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            padding: 2px;
+        }
+
+        .matrix-table th img {
+            width: 25px;
+            height: 25px;
+            vertical-align: middle;
+        }
+
+        .matrix-table th:first-child {
+            position: sticky;
+            left: 0;
+            z-index: 20;
+            background: #333;
+        }
+
+        .diff-pos {
+            color: #55ff55;
+            font-size: 0.6rem;
+            display: block;
+        }
+
+        .diff-neg {
+            color: #ff5555;
+            font-size: 0.6rem;
+            display: block;
+        }
+
+        .diff-zero {
+            display: none;
+        }
+
+        .cell-changed {
+            background-color: #3d2b00 !important;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>基礎相性値・最適化ツール</h1>
+
+        <!-- Step 1: Input Parents -->
+        <div class="card">
+            <h2>① 親・祖父母入力 <span style="font-size:0.8rem; color:#888; font-weight:normal;">(タップして選択)</span></h2>
+
+            <div class="parent-grid-row">
+                <div class="parent-label">父方</div>
+                <div onclick="openModal('input-f')">
+                    <div class="monster-btn" id="btn-input-f"><span>父選択</span></div>
+                    <input type="hidden" id="input-f">
+                </div>
+                <div onclick="openModal('input-ff')">
+                    <div class="monster-btn" id="btn-input-ff"><span>祖父選択</span></div>
+                    <input type="hidden" id="input-ff">
+                </div>
+                <div onclick="openModal('input-fm')">
+                    <div class="monster-btn" id="btn-input-fm"><span>祖母選択</span></div>
+                    <input type="hidden" id="input-fm">
+                </div>
+            </div>
+
+            <div class="parent-grid-row">
+                <div class="parent-label">母方</div>
+                <div onclick="openModal('input-m')">
+                    <div class="monster-btn" id="btn-input-m"><span>母選択</span></div>
+                    <input type="hidden" id="input-m">
+                </div>
+                <div onclick="openModal('input-mf')">
+                    <div class="monster-btn" id="btn-input-mf"><span>祖父選択</span></div>
+                    <input type="hidden" id="input-mf">
+                </div>
+                <div onclick="openModal('input-mm')">
+                    <div class="monster-btn" id="btn-input-mm"><span>祖母選択</span></div>
+                    <input type="hidden" id="input-mm">
+                </div>
+            </div>
+
+            <div style="border-top: 1px solid #333; margin: 20px 0;"></div>
+
+            <!-- Secret Inputs -->
+            <div class="slider-container">
+                <label style="font-size:0.9rem; margin-bottom:5px; display:block;">共通秘伝III (<span id="v3-val"
+                        style="color:#03dac6; font-weight:bold;">0</span>個)</label>
+                <div class="slider-wrapper">
+                    <button class="adjust-btn" onclick="adjustSlider('input-s3', -1)">-</button>
+                    <input type="range" id="input-s3" min="0" max="20" value="0"
+                        oninput="updateSliderVal('input-s3', 'v3-val')">
+                    <button class="adjust-btn" onclick="adjustSlider('input-s3', 1)">+</button>
+                </div>
+            </div>
+            <div class="slider-container">
+                <label style="font-size:0.9rem; margin-bottom:5px; display:block;">共通秘伝II (<span id="v2-val"
+                        style="color:#03dac6; font-weight:bold;">0</span>個)</label>
+                <div class="slider-wrapper">
+                    <button class="adjust-btn" onclick="adjustSlider('input-s2', -1)">-</button>
+                    <input type="range" id="input-s2" min="0" max="20" value="0"
+                        oninput="updateSliderVal('input-s2', 'v2-val')">
+                    <button class="adjust-btn" onclick="adjustSlider('input-s2', 1)">+</button>
+                </div>
+            </div>
+
+            <button onclick="generateTable()" class="btn-accent">子モンスター一覧を表示</button>
+        </div>
+
+        <!-- Step 2: Input Children Symbols -->
+        <div class="card" id="step2-card" style="display:none;">
+            <h2>② 検証と修正</h2>
+            <p style="font-size:0.8rem; color:#aaa;">予測と異なるシンボルがある場合は修正してください。</p>
+            <div style="max-height: 400px; overflow-y: auto; border:1px solid #333; border-radius:8px;">
+                <table id="children-table">
+                    <thead>
+                        <tr>
+                            <th style="width:30%">種族</th>
+                            <th style="width:15%">予測</th>
+                            <th style="width:15%">値</th>
+                            <th>実測 (修正)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Generated via JS -->
+                    </tbody>
+                </table>
+            </div>
+            <button onclick="commitObservations()" class="btn-primary" style="margin-top:15px;">リストに追加 (確定)</button>
+        </div>
+
+        <!-- Step 3: Optimization -->
+        <div class="card">
+            <h2>③ 最適化実行</h2>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <div style="font-size:0.9rem;">
+                    登録データ数: <span id="obs-count" style="font-weight:bold; font-size:1.2rem;">0</span>
+                </div>
+                <div style="display:flex; gap:5px;">
+                    <button type="button" onclick="backupData()" class="btn-secondary"
+                        title="検証データをJSON形式で保存します">バックアップ保存</button>
+                    <label class="btn-secondary"
+                        style="margin-top:10px; display:flex; align-items:center; justify-content:center; cursor:pointer;"
+                        title="JSONファイルを読み込みます">
+                        バックアップ読込
+                        <input type="file" onchange="restoreData(this)" accept=".json" style="display:none;">
+                    </label>
+                    <button type="button" onclick="execClear()" class="btn-danger">全クリア</button>
+                </div>
+            </div>
+
+            <button onclick="runOptimization()" id="btn-optimize" class="btn-primary">最適化をスタート</button>
+
+            <div class="progress-bar-container" id="progress-container"
+                style="display:none; margin-top:10px; background:#333; height:8px; border-radius:4px; overflow:hidden;">
+                <div class="progress-bar" id="progress-bar" style="width:0%; height:100%; background:#03dac6;"></div>
+            </div>
+
+            <div class="monitor-panel" id="log-panel">
+                <div style="color:#888;">System Ready...</div>
+            </div>
+        </div>
+
+        <!-- Step 4: Result Matrix -->
+        <div class="card">
+            <h2>④ 基礎相性値マトリクス (最適化後)</h2>
+            <p style="font-size:0.8rem; color:#aaa;">変更されたセルはハイライト表示されます。</p>
+
+            <button onclick="exportAsPatch()" class="btn-accent"
+                style="margin-bottom:10px; background:linear-gradient(135deg, #0288d1, #01579b); color:white;">元のツール用パッチ(JSON)として保存</button>
+
+            <div class="matrix-scroll">
+                <table class="matrix-table" id="matrix-display">
+                    <!-- Populated by JS -->
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Modal Element -->
+    <div id="monster-modal-ui" class="modal">
+        <div class="modal-content">
+            <h3 style="text-align:center; border-bottom:1px solid #444; padding-bottom:10px;">モンスター選択</h3>
+            <div id="modal-list" class="modal-grid"></div>
+            <button onclick="closeModalUI()" class="btn-secondary" style="margin-top:20px;">閉じる</button>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/data.js"></script>
+    <script src="js/solver_logic.js"></script>
+    <script>
+        const solverData = new SolverData();
+        let optimizer = null;
+        let currentModalTarget = null;
+        let currentContext = {};
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof COMPATIBILITY_MATRIX !== 'undefined') {
+                optimizer = new CompatibilityOptimizer(COMPATIBILITY_MATRIX);
+                renderMatrix(optimizer.matrix, optimizer.originalMatrix);
+            }
+            updateCountDisplay();
+        });
+
+        function updateCountDisplay() {
+            document.getElementById('obs-count').textContent = solverData.getObservations().length;
+        }
+
+        // --- Slider Logic ---
+        function adjustSlider(id, delta) {
+            const el = document.getElementById(id);
+            let val = Number(el.value) + delta;
+            val = Math.max(Number(el.min), Math.min(Number(el.max), val));
+            el.value = val;
+            el.dispatchEvent(new Event('input'));
+        }
+        function updateSliderVal(id, displayId) {
+            document.getElementById(displayId).innerText = document.getElementById(id).value;
+        }
+
+        // --- Modal Logic ---
+        function openModal(inputId) {
+            currentModalTarget = inputId;
+            const modal = document.getElementById('monster-modal-ui');
+            const list = document.getElementById('modal-list');
+            list.innerHTML = '';
+
+            MONSTER_NAMES.forEach((name, idx) => {
+                const div = document.createElement('div');
+                div.className = 'modal-item';
+                div.innerHTML = `<img src="images/${name}.png" loading="lazy" onerror="this.src=''"><span>${name}</span>`;
+                div.onclick = () => selectMonster(idx, name);
+                list.appendChild(div);
+            });
+            // Use classList for flex display (centered)
+            modal.classList.add('show');
+        }
+
+        function closeModalUI() {
+            document.getElementById('monster-modal-ui').classList.remove('show');
+        }
+
+        function selectMonster(idx, name) {
+            if (currentModalTarget) {
+                document.getElementById(currentModalTarget).value = idx;
+                const btn = document.getElementById('btn-' + currentModalTarget);
+                btn.innerHTML = `<img src="images/${name}.png"><span>${name}</span>`;
+                btn.classList.add('selected');
+            }
+            closeModalUI();
+        }
+
+        // --- Table Generation & Sorting ---
+        function generateTable() {
+            const getVal = (id) => document.getElementById(id).value === "" ? null : Number(document.getElementById(id).value);
+
+            const inputs = {
+                f: getVal('input-f'), ff: getVal('input-ff'), fm: getVal('input-fm'),
+                m: getVal('input-m'), mf: getVal('input-mf'), mm: getVal('input-mm'),
+                s3: Number(document.getElementById('input-s3').value),
+                s2: Number(document.getElementById('input-s2').value)
+            };
+
+            if (inputs.f === null || inputs.m === null) {
+                alert("父と母は必須です");
+                return;
+            }
+
+            currentContext = inputs;
+            const tbody = document.querySelector('#children-table tbody');
+            tbody.innerHTML = '';
+
+            let results = [];
+            MONSTER_NAMES.forEach((name, idx) => {
+                const score = optimizer.calculateScore(
+                    idx, inputs.f, inputs.ff, inputs.fm, inputs.m, inputs.mf, inputs.mm,
+                    inputs.s3, inputs.s2, optimizer.matrix
+                );
+                const symbol = optimizer.getSymbol(score);
+                results.push({ id: idx, name, score, symbol });
+            });
+
+            // Sort Descending
+            results.sort((a, b) => b.score - a.score);
+
+            results.forEach(d => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${d.name}</td>
+                    <td style="font-weight:bold; color:${getSymbolColor(d.symbol)}">${d.symbol}</td>
+                    <td>${d.score.toFixed(0)}</td>
+                    <td>
+                        <select class="symbol-select" data-child="${d.id}" style="color:${getSymbolColor(d.symbol)}">
+                            <option value="👑" ${d.symbol === '👑' ? 'selected' : ''}>👑</option>
+                            <option value="☆" ${d.symbol === '☆' ? 'selected' : ''}>☆</option>
+                            <option value="◎" ${d.symbol === '◎' ? 'selected' : ''}>◎</option>
+                            <option value="○" ${d.symbol === '○' ? 'selected' : ''}>○</option>
+                            <option value="△" ${d.symbol === '△' ? 'selected' : ''}>△</option>
+                            <option value="×" ${d.symbol === '×' ? 'selected' : ''}>×</option>
+                        </select>
+                    </td>
+                `;
+
+                const sel = tr.querySelector('select');
+                sel.addEventListener('change', (e) => {
+                    const newSym = e.target.value;
+                    sel.style.color = getSymbolColor(newSym);
+                    if (newSym !== d.symbol) tr.style.backgroundColor = '#3a2a00';
+                    else tr.style.backgroundColor = '';
+                });
+
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('step2-card').style.display = 'block';
+            setTimeout(() => {
+                document.getElementById('step2-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+        }
+
+        function getSymbolColor(s) {
+            if (s === '👑') return '#ffd700';
+            if (s === '☆') return '#ffa500';
+            if (s === '◎') return '#ff5555';
+            if (s === '○') return '#55ff55';
+            return '#fff';
+        }
+
+        // --- Commit & Clear ---
+        function commitObservations() {
+            const selects = document.querySelectorAll('.symbol-select');
+            let count = 0;
+            selects.forEach(sel => {
+                solverData.addObservation({
+                    childId: Number(sel.dataset.child),
+                    ...currentContext,
+                    correctSymbol: sel.value
+                });
+                count++;
+            });
+            updateCountDisplay();
+            document.getElementById('step2-card').style.display = 'none';
+            log(`Added ${count} records. Total: ${solverData.getObservations().length}`);
+        }
+
+        function execClear() {
+            solverData.clear();
+            updateCountDisplay();
+            log("All data cleared.");
+            alert("データをクリアしました");
+        }
+
+        // --- Optimization ---
+        async function runOptimization() {
+            const obs = solverData.getObservations();
+            if (obs.length === 0) return alert("データがありません");
+
+            const btn = document.getElementById('btn-optimize');
+            btn.disabled = true;
+            btn.innerText = "最適化中...";
+
+            const progress = document.getElementById('progress-bar');
+            document.getElementById('progress-container').style.display = 'block';
+            log("Optimization Started...");
+
+            const result = await optimizer.optimize(obs, 5000, 0.5, (i, tot, ev) => {
+                const pct = (i / tot) * 100;
+                progress.style.width = pct + "%";
+                if (i % 200 === 0) {
+                    log(`Iter ${i}: Penalty ${ev.penalty.toFixed(0)} / Conflicts ${ev.contradictions}`);
+                }
+            });
+
+            log(`COMPLETE! Final Penalty: ${result.eval.penalty.toFixed(1)}`);
+            progress.style.width = "100%";
+            btn.disabled = false;
+            btn.innerText = "最適化をスタート";
+
+            renderMatrix(result.matrix, optimizer.originalMatrix);
+        }
+
+        function log(msg) {
+            const p = document.getElementById('log-panel');
+            const time = new Date().toLocaleTimeString();
+            p.innerHTML += `<div><span style="color:#555;">[${time}]</span> ${msg}</div>`;
+            p.scrollTop = p.scrollHeight;
+        }
+
+        // --- Matrix Display with Diff ---
+        function renderMatrix(current, original) {
+            const table = document.getElementById('matrix-display');
+            table.innerHTML = '';
+
+            let thead = '<tr><th></th>';
+            MONSTER_NAMES.forEach(n => {
+                thead += `<th><img src="images/${n}.png" onerror="this.style.display='none'"></th>`;
+            });
+            thead += '</tr>';
+            table.innerHTML += thead;
+
+            current.forEach((row, rIdx) => {
+                let tr = `<tr><th><img src="images/${MONSTER_NAMES[rIdx]}.png" onerror="this.style.display='none'"></th>`;
+                row.forEach((val, cIdx) => {
+                    const origVal = original[rIdx][cIdx];
+                    const diff = val - origVal;
+                    let diffHtml = '<span class="diff-zero"></span>';
+                    let cellClass = '';
+
+                    if (Math.abs(diff) > 0.05) {
+                        const sign = diff > 0 ? '+' : '';
+                        const cls = diff > 0 ? 'diff-pos' : 'diff-neg';
+                        diffHtml = `<span class="${cls}">(${sign}${diff.toFixed(1)})</span>`;
+                        cellClass = 'cell-changed';
+                    }
+
+                    tr += `<td class="${cellClass}">
+                        ${val.toFixed(1)}
+                        ${diffHtml}
+                    </td>`;
+                });
+                tr += '</tr>';
+                table.innerHTML += tr;
+            });
+        }
+
+        // --- Export / Import ---
+
+        // 1. Export as Patch for Main Tool
+        function exportAsPatch() {
+            if (!optimizer) return;
+            const diffData = {};
+            const current = optimizer.matrix;
+            const original = optimizer.originalMatrix;
+
+            // Generate diff object { "childIdx-parentIdx": diffValue }
+            // Main tool expects format: key = `${childIdx}-${parentIdx}`
+            current.forEach((row, rIdx) => { // row is child
+                row.forEach((val, cIdx) => { // col is parent
+                    const diff = val - original[rIdx][cIdx];
+                    if (Math.abs(diff) > 0.001) {
+                        const key = `${rIdx}-${cIdx}`;
+                        diffData[key] = diff;
+                    }
+                });
+            });
+
+            if (Object.keys(diffData).length === 0) {
+                alert("変更点がないため、パッチを作成できません。");
+                return;
+            }
+
+            downloadJSON(diffData, "mf_sim_patch.json");
+        }
+
+        // 2. Backup Solver Data (Observations)
+        function backupData() {
+            const obs = solverData.getObservations();
+            if (obs.length === 0) {
+                alert("保存するデータがありません。");
+                return;
+            }
+            downloadJSON(obs, "solver_backup.json");
+        }
+
+        // 3. Restore Solver Data
+        function restoreData(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (Array.isArray(data)) {
+                        if (confirm("現在のデータを上書きして読み込みますか？")) {
+                            solverData.observations = data;
+                            solverData.saveToStorage();
+                            updateCountDisplay();
+                            alert("データを復元しました (件数: " + data.length + ")");
+                        }
+                    } else {
+                        alert("不正なファイル形式です");
+                    }
+                } catch (err) {
+                    alert("読み込みエラー: " + err);
+                }
+                input.value = ''; // Reset
+            };
+            reader.readAsText(file);
+        }
+
+        function downloadJSON(data, filename) {
+            // Reverting to Data URI as Blob URLs often fail with 'null' origin in local file:// context
+            const jsonStr = JSON.stringify(data, null, 2);
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(jsonStr);
+            const node = document.createElement('a');
+            node.setAttribute("href", dataStr);
+            node.setAttribute("download", filename);
+            document.body.appendChild(node);
+            node.click();
+            node.remove();
+        }
+
+    </script>
+</body>
+
+</html>
