@@ -112,7 +112,27 @@
             font-size: 0.8rem;
             color: #888;
             font-weight: bold;
-            text-align: center;
+            /* --- Help Button (Updated) --- */
+        }
+
+        .manual-btn {
+            background: #444;
+            color: #ccc;
+            border: 1px solid #555;
+            border-radius: 4px;
+            font-size: 0.65rem;
+            padding: 2px 8px;
+            cursor: pointer;
+            margin-left: 10px;
+            vertical-align: middle;
+            transition: all 0.2s;
+            font-weight: normal;
+            width: auto;
+        }
+
+        .manual-btn:hover {
+            background: #666;
+            color: #fff;
         }
 
         .monster-btn {
@@ -355,17 +375,15 @@
 
         .diff-zero {
             display: none;
-        }
-
-        .cell-changed {
-            background-color: #3d2b00 !important;
-        }
     </style>
 </head>
 
 <body>
     <div class="container">
-        <h1>基礎相性値・最適化ツール</h1>
+        <h1>
+            基礎相性値・最適化ツール
+            <button class="manual-btn" onclick="openManual()">使い方</button>
+        </h1>
 
         <!-- Step 1: Input Parents -->
         <div class="card">
@@ -489,19 +507,24 @@
             <h2>④ 基礎相性値マトリクス (最適化後)</h2>
             <p style="font-size:0.8rem; color:#aaa;">変更されたセルはハイライト表示されます。</p>
 
-            <button onclick="exportAsPatch()" class="btn-accent"
-                style="margin-bottom:10px; background:linear-gradient(135deg, #0288d1, #01579b); color:white;">元のツール用パッチ(JSON)として保存</button>
-
             <div class="matrix-scroll">
                 <table class="matrix-table" id="matrix-display">
                     <!-- Populated by JS -->
                 </table>
             </div>
+
+            <!-- Moved Export Button Here (Style: Small and less prominent) -->
+            <div style="text-align: right; margin-top: 10px;">
+                <button onclick="exportAsPatch()" class="btn-secondary"
+                    style="width:auto; font-size:0.75rem; padding:6px 12px; background:#2a2a2a; color:#888;">
+                    パッチを保存
+                </button>
+            </div>
         </div>
 
     </div>
 
-    <!-- Modal Element -->
+    <!-- Modal Element: Monster Selection -->
     <div id="monster-modal-ui" class="modal">
         <div class="modal-content">
             <h3 style="text-align:center; border-bottom:1px solid #444; padding-bottom:10px;">モンスター選択</h3>
@@ -509,6 +532,37 @@
             <button onclick="closeModalUI()" class="btn-secondary" style="margin-top:20px;">閉じる</button>
         </div>
     </div>
+
+    <!-- Modal Element: Manual -->
+    <div id="manual-modal" class="modal">
+        <div class="modal-content" style="max-width: 700px;">
+            <h3 style="text-align:center; border-bottom:1px solid #444; padding-bottom:10px; margin-top:0;">
+                使い方マニュアル
+            </h3>
+            <div class="manual-section">
+                <h3>1. 親・祖父母の入力 (①)</h3>
+                <p>各枠をタップして、対象のモンスターをアイコンから選択します。</p>
+
+                <h3>2. 共通秘伝の入力</h3>
+                <p>スライダーで共通秘伝IIIとIIの個数を設定します。</p>
+
+                <h3>3. 検証と修正 (②)</h3>
+                <p>「子モンスター一覧を表示」を押すと、予測結果が表示されます。</p>
+                <p>ゲーム内の結果と異なる場合、プルダウンから正しいシンボルを選択し、「リストに追加 (確定)」を押してください。</p>
+
+                <h3>4. 最適化実行 (③)</h3>
+                <p>「最適化をスタート」を押すと、登録データに合わせて相性値が自動調整されます。</p>
+
+                <h3>5. 結果の保存と復元</h3>
+                <p>
+                    <strong>バックアップ保存</strong>: 検証中のデータをファイルとして保存します。<br>
+                    <strong>バックアップ読込</strong>: 保存したファイルから検証を再開できます。
+                </p>
+            </div>
+            <button onclick="closeManual()" class="btn-primary" style="margin-top:20px;">閉じる</button>
+        </div>
+    </div>
+
 
     <!-- Scripts -->
     <script src="js/data.js"></script>
@@ -563,6 +617,14 @@
 
         function closeModalUI() {
             document.getElementById('monster-modal-ui').classList.remove('show');
+        }
+
+        // --- Manual Modal Logic ---
+        function openManual() {
+            document.getElementById('manual-modal').classList.add('show');
+        }
+        function closeManual() {
+            document.getElementById('manual-modal').classList.remove('show');
         }
 
         function selectMonster(idx, name) {
@@ -752,7 +814,10 @@
 
         // 1. Export as Patch for Main Tool
         function exportAsPatch() {
-            if (!optimizer) return;
+            if (!optimizer) {
+                alert("データの読み込みが完了していません");
+                return;
+            }
             const diffData = {};
             const current = optimizer.matrix;
             const original = optimizer.originalMatrix;
@@ -770,7 +835,7 @@
             });
 
             if (Object.keys(diffData).length === 0) {
-                alert("変更点がないため、パッチを作成できません。");
+                alert("変更点がないため、パッチを作成できません。\n\n※「最適化をスタート」を実行して基礎相性値が更新されると、パッチを作成できるようになります。");
                 return;
             }
 
