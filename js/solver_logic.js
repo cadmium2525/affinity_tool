@@ -71,7 +71,7 @@ class CompatibilityOptimizer {
         return currentMatrix[youngerIdx][olderIdx] || 0;
     }
 
-    calculateScore(childId, f, ff, fm, m, mf, mm, s3, s2, matchMatrix) {
+    calculateScore(childId, f, ff, fm, m, mf, mm, s3, s2, noble, matchMatrix) {
         // Safe check for missing inputs
         if ([childId, f, ff, fm, m, mf, mm].some(x => x === null || x === undefined)) return 0;
 
@@ -85,8 +85,9 @@ class CompatibilityOptimizer {
 
         let base = 224;
         let bonus = (s2 * 5) + (s3 * 12.5);
+        let nobleBonus = noble || 0;
 
-        return term1 + term2 + term3 + term4 + term5 + term6 + term7 + base + bonus;
+        return term1 + term2 + term3 + term4 + term5 + term6 + term7 + base + bonus + nobleBonus;
     }
 
     getSymbol(score) {
@@ -105,7 +106,7 @@ class CompatibilityOptimizer {
         for (let obs of observations) {
             let score = this.calculateScore(
                 obs.childId, obs.f, obs.ff, obs.fm, obs.m, obs.mf, obs.mm,
-                obs.s3, obs.s2, currentMatrix
+                obs.s3, obs.s2, obs.noble, currentMatrix
             );
             let targetRange = this.symbolRanges[obs.correctSymbol];
 
