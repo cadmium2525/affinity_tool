@@ -108,6 +108,19 @@ class CompatibilityOptimizer {
                 obs.childId, obs.f, obs.ff, obs.fm, obs.m, obs.mf, obs.mm,
                 obs.s3, obs.s2, obs.noble, currentMatrix
             );
+
+            // Crown Special Handling: Lower Bound Only
+            if (obs.correctSymbol === "👑") {
+                const CROWN_MIN = 660;
+                if (score < CROWN_MIN) {
+                    // Penalty for being below 660
+                    totalPenalty += (CROWN_MIN - score) ** 2;
+                    contradictionCount++;
+                }
+                // If score >= 660, penalty is 0 (as requested)
+                continue; // Done with this observation
+            }
+
             let targetRange = this.symbolRanges[obs.correctSymbol];
 
             if (!targetRange) continue;
@@ -124,7 +137,7 @@ class CompatibilityOptimizer {
         return { penalty: totalPenalty, contradictions: contradictionCount };
     }
 
-    async optimize(observations, iterations = 1000, stepSize = 0.5, onProgress = null) {
+    async optimize(observations, iterations = 1000, stepSize = 0.5, priorityBloodlines = [], onProgress = null) {
         let currentMatrix = JSON.parse(JSON.stringify(this.matrix));
         let currentEval = this.evaluateError(currentMatrix, observations);
 
@@ -134,18 +147,83 @@ class CompatibilityOptimizer {
         const numRows = currentMatrix.length;
         const numCols = currentMatrix[0].length;
 
+        // Define Motion Limit constant
+        const MOTION_LIMIT = 20;
+
+        // Phase 1: Priority Optimization (concentrate on priority cells)
+        // If priorityBloodlines is empty, we skip this specific focus or treat all as equal.
+        // We will adapt the probability of picking a priority cell.
+
         for (let i = 0; i < iterations; i++) {
-            let r = Math.floor(Math.random() * numRows);
-            let c = Math.floor(Math.random() * numCols);
+            let r, c;
+
+            // Phase Logic
+            // Phase 1 (First 50% of iterations): High chance to pick priority cells if they exist
+            // Phase 2 (Remaining): Global optimization
+            const isPhase1 = i < (iterations * 0.5);
+            const usePriority = isPhase1 && priorityBloodlines.length > 0;
+
+            if (usePriority && Math.random() < 0.8) {
+                // 80% chance to pick from priority bloodlines in Phase 1
+                const pIdx = priorityBloodlines[Math.floor(Math.random() * priorityBloodlines.length)];
+                // Decide if this is Row or Col
+                if (Math.random() < 0.5) {
+                    r = pIdx;
+                    c = Math.floor(Math.random() * numCols);
+                } else {
+                    r = Math.floor(Math.random() * numRows);
+                    c = pIdx;
+                }
+            } else {
+                // Random selection
+                r = Math.floor(Math.random() * numRows);
+                c = Math.floor(Math.random() * numCols);
+            }
+
             let originalValue = currentMatrix[r][c];
+            let baseValue = this.originalMatrix[r][c]; // Correct reference for motion limit
 
             let change = (Math.random() < 0.5 ? -1 : 1) * stepSize;
-            currentMatrix[r][c] += change;
-            if (currentMatrix[r][c] < 0) currentMatrix[r][c] = 0;
+            let newValue = currentMatrix[r][c] + change;
+
+            if (newValue < 0) newValue = 0;
+
+            // Apply Motion Limit Check
+            // Allow if it moves CLOSER to the base value or stays within range
+            // If it exceeds range, clamp it? Or reject?
+            // "Cannot change beyond range" -> Clamp
+            let minLimit = baseValue - MOTION_LIMIT;
+            let maxLimit = baseValue + MOTION_LIMIT;
+            if (minLimit < 0) minLimit = 0; // Value cannot be negative
+
+            if (newValue < minLimit || newValue > maxLimit) {
+                // Revert or clamp?
+                // If the current value is already out of bounds (legacy), allow moving back towards bounds.
+                // But generally we should enforce valid moves. 
+                // Let's just reject this move if it goes out of bounds.
+                // Exception: if we are already out of bounds, only allow moves that reduce the error distance to the bound.
+                if (newValue < minLimit && newValue < currentMatrix[r][c]) {
+                    // Moving further away -> reject
+                    continue;
+                }
+                if (newValue > maxLimit && newValue > currentMatrix[r][c]) {
+                    // Moving further away -> reject
+                    continue;
+                }
+                // If it's just a normal move out of bounds, clamp it to the bound?
+                // Let's rely on rejection for simplicity of the annealing process unless it gets stuck.
+                // Implementing clamped move:
+                if (newValue < minLimit) newValue = minLimit;
+                if (newValue > maxLimit) newValue = maxLimit;
+            }
+
+            currentMatrix[r][c] = newValue;
 
             let newEval = this.evaluateError(currentMatrix, observations);
 
-            if (newEval.penalty < currentEval.penalty) {
+            // Simple Hill Climbing (Accept only changes that improve)
+            // Could add Simulated Annealing here if needed for local optima
+            if (newEval.penalty <= currentEval.penalty) {
                 currentEval = newEval;
                 if (newEval.penalty < bestEval.penalty) {
                     bestMatrix = JSON.parse(JSON.stringify(currentMatrix));

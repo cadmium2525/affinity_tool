@@ -637,8 +637,21 @@
 
 
         <!-- Step 3: Optimization -->
-        <div class="card">
+        <div class="card" id="step3-card">
             <h2>③ 最適化実行</h2>
+
+            <!-- Priority Selection -->
+            <div
+                style="margin-bottom: 15px; background: #222; padding: 10px; border-radius: 8px; border: 1px solid #444;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <label style="font-size:0.9rem; font-weight:bold; color:#03dac6;">優先修正する血統</label>
+                    <button class="manual-btn" onclick="openPriorityModal()">編集</button>
+                </div>
+                <div id="priority-display-list" style="margin-top:5px; font-size:0.8rem; color:#aaa; min-height:20px;">
+                    (指定なし)
+                </div>
+            </div>
+
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                 <div style="font-size:0.9rem;">登録データ数: <span id="obs-count"
                         style="font-weight:bold; font-size:1.2rem;">0</span></div>
@@ -730,12 +743,12 @@
                 <div class="modal-item" style="color:#bb86fc;">★4</div>
                 <div class="modal-item" style="color:#bb86fc;">★5</div>
                 <div class="modal-item" style="color:#bb86fc;">★6</div>
-                <div class="modal-item">8.5</div>
-                <div class="modal-item">14</div>
-                <div class="modal-item">20</div>
-                <div class="modal-item">25.5</div>
-                <div class="modal-item">31.5</div>
-                <div class="modal-item">37</div>
+                <div class="modal-item" onclick="applyNobleValue(8.5)">8.5</div>
+                <div class="modal-item" onclick="applyNobleValue(14)">14</div>
+                <div class="modal-item" onclick="applyNobleValue(20)">20</div>
+                <div class="modal-item" onclick="applyNobleValue(25.5)">25.5</div>
+                <div class="modal-item" onclick="applyNobleValue(31.5)">31.5</div>
+                <div class="modal-item" onclick="applyNobleValue(37)">37</div>
 
                 <!-- 7-12 -->
                 <div class="modal-item" style="color:#bb86fc; margin-top:8px;">★7</div>
@@ -744,12 +757,12 @@
                 <div class="modal-item" style="color:#bb86fc; margin-top:8px;">★10</div>
                 <div class="modal-item" style="color:#bb86fc; margin-top:8px;">★11</div>
                 <div class="modal-item" style="color:#bb86fc; margin-top:8px;">★12</div>
-                <div class="modal-item">43</div>
-                <div class="modal-item">48.5</div>
-                <div class="modal-item">54.5</div>
-                <div class="modal-item">60</div>
-                <div class="modal-item">66</div>
-                <div class="modal-item">71.5</div>
+                <div class="modal-item" onclick="applyNobleValue(43)">43</div>
+                <div class="modal-item" onclick="applyNobleValue(48.5)">48.5</div>
+                <div class="modal-item" onclick="applyNobleValue(54.5)">54.5</div>
+                <div class="modal-item" onclick="applyNobleValue(60)">60</div>
+                <div class="modal-item" onclick="applyNobleValue(66)">66</div>
+                <div class="modal-item" onclick="applyNobleValue(71.5)">71.5</div>
 
                 <!-- 13-18 -->
                 <div class="modal-item" style="color:#bb86fc; margin-top:8px;">★13</div>
@@ -758,12 +771,12 @@
                 <div class="modal-item" style="color:#bb86fc; margin-top:8px;">★16</div>
                 <div class="modal-item" style="color:#bb86fc; margin-top:8px;">★17</div>
                 <div class="modal-item" style="color:#bb86fc; margin-top:8px;">★18</div>
-                <div class="modal-item">77.5</div>
-                <div class="modal-item">83</div>
-                <div class="modal-item">89</div>
-                <div class="modal-item">94.5</div>
-                <div class="modal-item">100.5</div>
-                <div class="modal-item">106</div>
+                <div class="modal-item" onclick="applyNobleValue(77.5)">77.5</div>
+                <div class="modal-item" onclick="applyNobleValue(83)">83</div>
+                <div class="modal-item" onclick="applyNobleValue(89)">89</div>
+                <div class="modal-item" onclick="applyNobleValue(94.5)">94.5</div>
+                <div class="modal-item" onclick="applyNobleValue(100.5)">100.5</div>
+                <div class="modal-item" onclick="applyNobleValue(106)">106</div>
 
                 <!-- 19-24 -->
                 <div class="modal-item" style="color:#bb86fc; margin-top:8px;">★19</div>
@@ -772,12 +785,12 @@
                 <div class="modal-item" style="color:#bb86fc; margin-top:8px;">★22</div>
                 <div class="modal-item" style="color:#bb86fc; margin-top:8px;">★23</div>
                 <div class="modal-item" style="color:#bb86fc; margin-top:8px;">★24</div>
-                <div class="modal-item">108</div>
-                <div class="modal-item">110</div>
-                <div class="modal-item">112</div>
-                <div class="modal-item">114</div>
-                <div class="modal-item">116</div>
-                <div class="modal-item">118</div>
+                <div class="modal-item" onclick="applyNobleValue(108)">108</div>
+                <div class="modal-item" onclick="applyNobleValue(110)">110</div>
+                <div class="modal-item" onclick="applyNobleValue(112)">112</div>
+                <div class="modal-item" onclick="applyNobleValue(114)">114</div>
+                <div class="modal-item" onclick="applyNobleValue(116)">116</div>
+                <div class="modal-item" onclick="applyNobleValue(118)">118</div>
 
                 <!-- 25-30 -->
                 <div class="modal-item" style="color:#bb86fc; margin-top:8px;">★25</div>
@@ -786,12 +799,12 @@
                 <div class="modal-item" style="color:#bb86fc; margin-top:8px;">★28</div>
                 <div class="modal-item" style="color:#bb86fc; margin-top:8px;">★29</div>
                 <div class="modal-item" style="color:#bb86fc; margin-top:8px;">★30</div>
-                <div class="modal-item">120</div>
-                <div class="modal-item">122</div>
-                <div class="modal-item">124</div>
-                <div class="modal-item">126</div>
-                <div class="modal-item">128</div>
-                <div class="modal-item">134</div>
+                <div class="modal-item" onclick="applyNobleValue(120)">120</div>
+                <div class="modal-item" onclick="applyNobleValue(122)">122</div>
+                <div class="modal-item" onclick="applyNobleValue(124)">124</div>
+                <div class="modal-item" onclick="applyNobleValue(126)">126</div>
+                <div class="modal-item" onclick="applyNobleValue(128)">128</div>
+                <div class="modal-item" onclick="applyNobleValue(134)">134</div>
 
                 <!-- 31-36 -->
                 <div class="modal-item" style="color:#bb86fc; margin-top:8px;">★31</div>
@@ -800,14 +813,28 @@
                 <div class="modal-item" style="color:#bb86fc; margin-top:8px;">★34</div>
                 <div class="modal-item" style="color:#bb86fc; margin-top:8px;">★35</div>
                 <div class="modal-item" style="color:#bb86fc; margin-top:8px;">★36</div>
-                <div class="modal-item">140</div>
-                <div class="modal-item">146</div>
-                <div class="modal-item">152</div>
-                <div class="modal-item">158</div>
-                <div class="modal-item">164</div>
-                <div class="modal-item">170</div>
+                <div class="modal-item" onclick="applyNobleValue(140)">140</div>
+                <div class="modal-item" onclick="applyNobleValue(146)">146</div>
+                <div class="modal-item" onclick="applyNobleValue(152)">152</div>
+                <div class="modal-item" onclick="applyNobleValue(158)">158</div>
+                <div class="modal-item" onclick="applyNobleValue(164)">164</div>
+                <div class="modal-item" onclick="applyNobleValue(170)">170</div>
             </div>
             <button onclick="closeNobleModal()" class="btn-secondary" style="margin-top:20px;">閉じる</button>
+        </div>
+    </div>
+
+    <!-- Modal Element: Priority Selection -->
+    <div id="priority-modal" class="modal">
+        <div class="modal-content">
+            <h3 style="text-align:center; border-bottom:1px solid #444; padding-bottom:10px;">優先対象の選択</h3>
+            <p style="font-size:0.8rem; color:#aaa; text-align:center;">タップして選択/解除 (複数可)</p>
+            <div id="priority-list" class="modal-grid"></div>
+            <div style="display:flex; gap:10px; margin-top:20px; align-items:center;">
+                <button onclick="closePriorityModal()" class="btn-primary" style="flex:2; margin:0;">決定</button>
+                <button onclick="clearPrioritySelection()" class="btn-secondary"
+                    style="flex:1; font-size:0.8rem; margin:0;">選択解除</button>
+            </div>
         </div>
     </div>
 
@@ -819,6 +846,8 @@
         let optimizer = null;
         let currentModalTarget = null;
         let currentContext = {};
+
+        let priorityBloodlines = []; // Stores indices
 
         // --- Persistence for App State (Matrix + Inputs) ---
         function saveAppState() {
@@ -833,7 +862,8 @@
 
             const state = {
                 inputs: inputs,
-                matrix: optimizer ? optimizer.matrix : null
+                matrix: optimizer ? optimizer.matrix : null,
+                priority: priorityBloodlines
             };
             localStorage.setItem('affinity_tool_state', JSON.stringify(state));
         }
@@ -873,6 +903,10 @@
                                 }
                             }
                         });
+                    }
+                    if (state.priority) {
+                        priorityBloodlines = state.priority;
+                        updatePriorityDisplay();
                     }
                 } catch (e) {
                     console.error("Failed to load app state", e);
@@ -1147,7 +1181,7 @@
             document.getElementById('progress-container').style.display = 'block';
             log("Optimization Started...");
 
-            const result = await optimizer.optimize(obs, 5000, 0.5, (i, tot, ev) => {
+            const result = await optimizer.optimize(obs, 5000, 0.5, priorityBloodlines, (i, tot, ev) => {
                 const pct = (i / tot) * 100;
                 progress.style.width = pct + "%";
                 if (i % 200 === 0) {
@@ -1303,6 +1337,89 @@
         }
         function closeNobleModal() {
             document.getElementById('noble-modal').classList.remove('show');
+        }
+
+        function applyNobleValue(val) {
+            const slider = document.getElementById('input-noble');
+            // If individual mode is active (visible), apply to individual input?
+            // Since the modal is shared, we should check which mode is active.
+            // But the request implies the main use. Let's apply to BOTH to be safe or check visibility.
+            // Simpler: Apply to both inputs if they exist, but update stored value based on active tab.
+
+            const batchInput = document.getElementById('input-noble');
+            if (batchInput) {
+                batchInput.value = val;
+                batchInput.dispatchEvent(new Event('input'));
+                batchInput.dispatchEvent(new Event('change'));
+            }
+
+            const indInput = document.getElementById('input-ind-noble');
+            if (indInput) {
+                indInput.value = val;
+                indInput.dispatchEvent(new Event('input'));
+                indInput.dispatchEvent(new Event('change'));
+            }
+
+            closeNobleModal();
+        }
+
+        // --- Priority Modal Logic ---
+        function openPriorityModal() {
+            const modal = document.getElementById('priority-modal');
+            const list = document.getElementById('priority-list');
+            list.innerHTML = '';
+
+            MONSTER_NAMES.forEach((name, idx) => {
+                const div = document.createElement('div');
+                div.className = 'modal-item';
+                // Highlight if selected
+                if (priorityBloodlines.includes(idx)) {
+                    div.style.border = '2px solid #03dac6';
+                    div.style.backgroundColor = '#004d40';
+                }
+
+                div.innerHTML = `<img src="images/${name}.png" loading="lazy" onerror="this.src=''"><span>${name}</span>`;
+                div.onclick = () => togglePriority(idx, div);
+                list.appendChild(div);
+            });
+            modal.classList.add('show');
+        }
+
+        function closePriorityModal() {
+            document.getElementById('priority-modal').classList.remove('show');
+            updatePriorityDisplay();
+            saveAppState();
+        }
+
+        function togglePriority(idx, el) {
+            const pos = priorityBloodlines.indexOf(idx);
+            if (pos === -1) {
+                priorityBloodlines.push(idx);
+                el.style.border = '2px solid #03dac6';
+                el.style.backgroundColor = '#004d40';
+            } else {
+                priorityBloodlines.splice(pos, 1);
+                el.style.border = 'none';
+                el.style.backgroundColor = '#2d2d2d';
+            }
+        }
+
+        function clearPrioritySelection() {
+            priorityBloodlines = [];
+            document.querySelectorAll('#priority-list .modal-item').forEach(el => {
+                el.style.border = 'none';
+                el.style.backgroundColor = '#2d2d2d';
+            });
+        }
+
+        function updatePriorityDisplay() {
+            const disp = document.getElementById('priority-display-list');
+            if (priorityBloodlines.length === 0) {
+                disp.innerText = '(指定なし)';
+                return;
+            }
+            const names = priorityBloodlines.map(i => MONSTER_NAMES[i]).join(', ');
+            disp.innerText = names;
         }
 
         // --- Save Matrix Image ---
